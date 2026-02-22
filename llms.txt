@@ -1,0 +1,130 @@
+# Aptabase — Swift SDK
+
+> Privacy-first, open-source analytics for iOS, macOS, watchOS, tvOS, and visionOS apps. GDPR-compliant, no cookies, no personal data collection.
+
+Package: `Aptabase` (Swift Package Manager) or `Aptabase` (CocoaPods)
+Install: Add `https://github.com/aptabase/aptabase-swift` via SPM or CocoaPods
+Repo: https://github.com/aptabase/aptabase-swift
+
+## Overview
+
+Aptabase is an open-source, privacy-first analytics platform. This SDK integrates Aptabase into Swift apps on iOS, macOS, watchOS, tvOS, and visionOS.
+
+- Get your App Key from the Aptabase dashboard (Settings > Instructions)
+- App keys follow the format `A-EU-*` (European) or `A-US-*` (US) or `A-SH-*` (self-hosted)
+- Only strings, numbers (Int, Double, Float), and booleans are allowed as custom property values
+- All tracking is non-blocking and runs in the background
+- No events are tracked automatically — you must call `trackEvent` manually
+
+## Installation
+
+### Swift Package Manager (Recommended)
+
+Add to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(name: "Aptabase", url: "https://github.com/aptabase/aptabase-swift.git", from: "0.3.4"),
+],
+targets: [
+    .target(name: "MyApp", dependencies: ["Aptabase"])
+]
+```
+
+Or add via Xcode: File > Add Package Dependencies > enter `https://github.com/aptabase/aptabase-swift`.
+
+### CocoaPods
+
+```ruby
+pod 'Aptabase', :git => 'https://github.com/aptabase/aptabase-swift.git', :tag => '0.3.4'
+```
+
+## Initialization
+
+Initialize the SDK as early as possible in your app:
+
+```swift
+import SwiftUI
+import Aptabase
+
+@main
+struct MyApp: App {
+    init() {
+        Aptabase.shared.initialize(appKey: "<YOUR_APP_KEY>")
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+```
+
+For UIKit apps:
+
+```swift
+import UIKit
+import Aptabase
+
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        Aptabase.shared.initialize(appKey: "<YOUR_APP_KEY>")
+        return true
+    }
+}
+```
+
+## Track Events
+
+```swift
+import Aptabase
+
+Aptabase.shared.trackEvent("app_started")
+Aptabase.shared.trackEvent("screen_view")
+```
+
+## Track Events with Properties
+
+```swift
+Aptabase.shared.trackEvent("screen_view", with: ["name": "Settings"])
+Aptabase.shared.trackEvent("purchase", with: ["amount": 9.99, "currency": "USD"])
+Aptabase.shared.trackEvent("level_complete", with: ["level": 5, "score": 1200])
+```
+
+## Configuration
+
+Pass `InitOptions` to customize behavior:
+
+```swift
+let options = InitOptions(
+    host: "https://your-self-hosted-instance.com",  // For self-hosted Aptabase
+    flushInterval: 30,                               // Custom flush interval in seconds
+    trackingMode: .asRelease                          // Force release mode
+)
+Aptabase.shared.initialize(appKey: "<YOUR_APP_KEY>", with: options)
+```
+
+- `host` — Custom server URL for self-hosted Aptabase instances (required for `A-SH-*` app keys)
+- `flushInterval` — Interval in seconds for batching and sending events (default: automatic)
+- `trackingMode` — `.readFromEnvironment` (default), `.asDebug`, or `.asRelease`
+
+To force-send queued events immediately:
+
+```swift
+Aptabase.shared.flush()
+```
+
+## Platform Notes
+
+- **Supported platforms**: iOS, macOS, watchOS (7.0+), tvOS, visionOS
+- **macOS**: Enable "Outgoing Connections (Client)" under App Sandbox capabilities
+- **Apple App Privacy**: See https://aptabase.com/docs/apple-app-privacy for how to fill out the form
+- The SDK automatically enhances events with OS version, app version, locale, and device model
+- Sessions auto-rotate when the app enters foreground after being backgrounded
+- The SDK uses `NotificationCenter` to observe app lifecycle events for automatic session management
+
+## Cross-Discovery
+
+For all Aptabase SDKs and documentation, see: https://aptabase.com/llms.txt
